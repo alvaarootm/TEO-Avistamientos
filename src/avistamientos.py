@@ -37,7 +37,30 @@ def lee_avistamientos(fichero :str) -> list[Avistamiento]:
     @return: lista de tuplas con la información de los avistamientos 
     @rtype: [Avistamiento(datetime, str, str, str, str, int, str, Coordenadas(float, float))]   
     '''
-    pass
+    avistamientos = ()
+    
+    with open(fichero, encoding='utf-8') as f:
+        next(f)  # Saltar la cabecera del CSV
+        for linea in f:
+            partes = linea.strip().split(',')
+            # Parsear los campos de la línea
+            fecha_hora = datetime.strptime(partes[0], '%m/%d/%Y %H:%M')
+            ciudad = partes[1]
+            estado = partes[2]
+            país = partes[3]
+            forma = partes[4]
+            duración = int(partes[5])
+            comentarios = partes[6]
+            latitud = float(partes[7])
+            longitud = float(partes[8])
+            coordenadas = Coordenadas(latitud, longitud)
+            # Crear el objeto Avistamiento
+            avistamiento = Avistamiento(
+                fecha_hora, ciudad, estado, país, forma, duración, comentarios, coordenadas
+            )
+            avistamientos.append(avistamiento)
+    
+    return avistamientos
 
 ### 2.1 Número de avistamientos producidos en una fecha
 def numero_avistamientos_fecha(avistamientos: list[Avistamiento], fecha: datetime.date) -> int:
@@ -59,7 +82,7 @@ def numero_avistamientos_fecha(avistamientos: list[Avistamiento], fecha: datetim
 
 # Por comprensión
 def numero_avistamientos_fecha2(avistamientos: list[Avistamiento], fecha: datetime.date) -> int:
-    pass
+    return sum(1 for avistamiento in avistamientos if avistamiento.fecha_hora.date()== fecha)
 
 ### 2.2 Número de formas observadas en un conjunto de estados
 def formas_estados(avistamientos: list[Avistamiento], estados: set[str]) -> int:
@@ -78,8 +101,9 @@ def formas_estados(avistamientos: list[Avistamiento], estados: set[str]) -> int:
 
 def formas_estados2(avistamientos: list[Avistamiento], estados: set[str]) -> int:
     # Por comprensión
-    pass
-    
+    formas_observadas = (avistamiento.forma for avistamiento in avistamientos if avistamiento.estado in estados )
+    return len(formas_observadas)
+
 ### 2.3 Duración total de los avistamientos en un estado
 def duracion_total(avistamientos: list[Avistamiento], estado: str) -> int:
     ''' 
@@ -96,7 +120,7 @@ def duracion_total(avistamientos: list[Avistamiento], estado: str) -> int:
 
 def duracion_total2(avistamientos: list[Avistamiento], estado: str) -> int:
     ## Por compresión
-    pass
+    return sum(avistamiento.duracion for avistamiento in avistamientos if avistamiento.estado == estado)
 
 
 ### 2.4 Avistamientos cercanos a una ubicación
@@ -139,7 +163,8 @@ def avistamiento_mayor_duracion(avistamientos: list[Avistamiento], forma: str) -
 
 def avistamiento_mayor_duracion2(avistamientos: list[Avistamiento], forma: str) -> Avistamiento:
     # Por comprension
-    pass
+    avistamientos_filtrados = (avistamiento for avistamiento in avistamientos if avistamiento.forma == forma)
+    return max(avistamientos_filtrados, key=lambda avistamiento: avistamiento.duracion)
 
 ### 3.2 Avistamiento cercano a un punto con mayor duración
 def avistamiento_cercano_mayor_duracion(avistamientos: list[Avistamiento], coordenadas: Coordenadas, radio: float = 0.5) -> tuple[int, str]:
